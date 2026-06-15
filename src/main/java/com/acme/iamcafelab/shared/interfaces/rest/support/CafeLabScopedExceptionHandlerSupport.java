@@ -56,9 +56,21 @@ public abstract class CafeLabScopedExceptionHandlerSupport {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<MessageResource> handleUnhandledRuntime(RuntimeException ex) {
+        String msg = ex.getMessage();
+
+        if (msg != null && msg.toLowerCase().contains("already exists")) {
+            log.warn("Duplicate resource detected: {}", msg);
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(new MessageResource(msg));
+        }
+
         log.error("Unhandled runtime in scoped controller advice", ex);
 
+        if (msg == null || msg.isBlank()) {
+            msg = "Error interno del servidor";
+        }
+
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new MessageResource("Error interno del servidor"));
+                .body(new MessageResource(msg));
     }
 }
