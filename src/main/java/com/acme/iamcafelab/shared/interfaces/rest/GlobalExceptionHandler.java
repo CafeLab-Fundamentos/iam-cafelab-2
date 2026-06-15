@@ -51,4 +51,21 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new MessageResource(msg));
     }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<MessageResource> handleRuntime(RuntimeException ex) {
+        String msg = ex.getMessage();
+
+        if (msg != null && msg.toLowerCase().contains("already exists")) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(new MessageResource(msg));
+        }
+
+        if (msg == null || msg.isBlank()) {
+            msg = "Error interno del servidor";
+        }
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new MessageResource(msg));
+    }
 }
